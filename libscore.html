@@ -52,7 +52,6 @@
                 <input id="lib${numSearchParameters}" type="text" name="lib${numSearchParameters}" value="${param == undefined ? "" : param}">
                 <br>
             `)
-            // console.log("param", param)
             numSearchParameters++;
         }
 
@@ -105,14 +104,12 @@
         $(document).ready(function () {
             
             var urlParams = getJsonFromUrl(location.search);
-            console.log('urlParams', urlParams)
             // For a fresh page without url parameters, display two textboxes
             if (Object.keys(urlParams)[0] === "") {
                 addSearchParameter();
                 addSearchParameter();
             } else { // Display a textbox for each search parameter
                 for (var i = 0; i < Object.keys(urlParams).length; i++) {
-                    console.log(urlParams[`lib${i + 1}`])
                     addSearchParameter(urlParams[`lib${i + 1}`]);
                 }
             }
