@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Final Project</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <article class="container">
+        <h1 class="text-center">You can search for Node libraries below to see and compare their scores</h1>
+
+        <h4>Search for...</h4>
+        <form id="submitForm" action="" method="GET">
+            <div id="searchParameters"></div>
+
+            <input id="addSearch" class="btn btn-success" type="button" value="+ Add search">
+            <br><br>
+
+            <input id="submit" class="btn btn-primary" type="submit" value="Search">
+        </form>
+
+        <br><br>
+
+        <div id="results"></div>
+    </article>
+
+    <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+
+    <!-- My script -->
+    <script> 
+
+        // Adds a new textbox by calling addSearchParameter()
+        $('#addSearch').click(() => {
+            addSearchParameter();
+        });
+
+        $('#submit').click((e) => {
+            displayResultsSection();
+            appendResultsSection();
+        });
+
+        var numSearchParameters = 1;
+
+        // Adds a new textbox
+        function addSearchParameter(param) {
+            $('#searchParameters').append(`
+                <label for="lib${numSearchParameters}">Library ${numSearchParameters}</label>
+                <input id="lib${numSearchParameters}" type="text" name="lib${numSearchParameters}" value="${param == undefined ? "" : param}">
+                <br>
+            `)
+            // console.log("param", param)
+            numSearchParameters++;
+        }
+
+        // Adds a dynamic results section
+        function displayResultsSection() {
+            $('#results').empty();
+            $('#results').append(`<h1>Results</h1>
+                                <table class="table">
+                                    <tr>
+                                        <th>Library name</th>
+                                        <th>Score</th>
+                                    </tr>
+                                    <tbody id="tblDataRows"></tbody>
+                                </table>`);
+        }
+
+        // Adds to the results section after each successful ajax call
+        function appendResultsSection() {
+            for (let i = 0; i < numSearchParameters - 1; i++) {
+                let libName = $('#lib' + (i + 1)).val();
+                
+                if(libName != "") {
+                    $.ajax({
+                        dataType: 'json',
+                        url: 'https://api.npms.io/v2/package/' + libName,
+                        success: function(jsonData) {
+                            var score = Math.round(jsonData.score.final * 100) + '%';
+                            $('#tblDataRows').append(`<tr>
+                                                    <td>${jsonData.collected.metadata.name}</td>
+                                                    <td>${score}</td>
+                                                    </tr>`)
+                        }
+                    });
+                }
+            };
+        }
+
+        // Parses the url and returns a json object with parameters
+        function getJsonFromUrl(url) {
+            if(!url) url = location.search;
+            var query = url.substr(1);
+            var result = {};
+            query.split("&").forEach(function(part) {
+                var item = part.split("=");
+                result[item[0]] = decodeURIComponent(item[1]);
+            });
+            return result;
+        }
+
+        $(document).ready(function () {
+            
+            var urlParams = getJsonFromUrl(location.search);
+            console.log('urlParams', urlParams)
+            // For a fresh page without url parameters, display two textboxes
+            if (Object.keys(urlParams)[0] === "") {
+                addSearchParameter();
+                addSearchParameter();
+            } else { // Display a textbox for each search parameter
+                for (var i = 0; i < Object.keys(urlParams).length; i++) {
+                    console.log(urlParams[`lib${i + 1}`])
+                    addSearchParameter(urlParams[`lib${i + 1}`]);
+                }
+            }
+
+            displayResultsSection();
+            appendResultsSection();
+        })
+    </script>
+</body>
+
+</html>
